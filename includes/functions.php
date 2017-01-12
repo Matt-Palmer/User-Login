@@ -1,4 +1,4 @@
-
+<link rel="stylesheet" href="css/style.css">
 <?php
 
 include "includes/db-connection.php";
@@ -15,38 +15,9 @@ function createUser(){
         $password = $_POST['password'];
         $confirmPassword = $_POST['confirm-password'];
 
-        $error = "";
+        $validateUser = validateUser($firstName, $lastName, $username, $password, $confirmPassword);
 
-        if($firstName == ""){
-            $error .= "You must enter your first name<br>"; 
-        }
-
-        if($lastName == ""){
-            $error .= "You must enter your last name<br>"; 
-        }
-
-        if($username == ""){
-            $error .= "You must enter a username<br>"; 
-        }
-
-        if($password == ""){
-            $error .= "You must enter a password<br>"; 
-        }
-        
-        if($confirmPassword == ""){
-            $error .= "You must confirm your password<br>"; 
-        }
-
-        if($password != "" && $confirmPassword != ""){
-            if($confirmPassword != $password){
-                $error .= "Your passwords do not match<br>";
-            } 
-        }
-
-
-        if ($error){
-            echo $error;
-        }else{
+        if (!$validateUser){
             $query = "INSERT INTO users(firstName, lastName, username, password) VALUES ('$firstName', '$lastName', '$username', '$password')";
 
             $result = mysqli_query($connection, $query);
@@ -55,15 +26,70 @@ function createUser(){
                 die('Query Failed' . msqli_error($connection));
             }else{
                 echo "<h3>User Created</h3>";
+
+                $_POST['first-name'] = "";
+                $_POST['last-name'] = "";
+                $_POST['username'] = "";
+            }
+            
+        }else{
+            echo "<div class='error-container'>" . $validateUser . "</div>";
+        }
+    }
+}
+
+function validateUser($firstName, $lastName, $username, $password, $confirmPassword){
+
+        global $connection;
+
+        $firstName = $firstName;
+        $lastName = $lastName;
+        $username = $username;
+        $password = $password;
+        $confirmPassword = $confirmPassword;
+        
+        $duplicateUsernameCheck = "SELECT username FROM users WHERE username = '$username'"; 
+        $result = mysqli_query($connection, $duplicateUsernameCheck);
+
+        $error = "";
+
+        if($firstName == ""){
+            $error .= "<span>You must enter your First name</span><br>"; 
+        }
+
+        if($lastName == ""){
+            $error .= "<span>You must enter your Last name</span><br>"; 
+        }
+
+        if($username == ""){
+            $error .= "<span>You must enter a Username</span><br>"; 
+        }
+
+        if($result){
+            if(mysqli_num_rows($result) >= 1){
+                $error .= "<span>Username has already been taken</span><br>";
             }
         }
+            
+        if($password == ""){
+            $error .= "<span>You must enter a Password</span><br>"; 
+        }
         
+        if($confirmPassword == ""){
+            $error .= "<span>You must confirm your password</span><br>"; 
+        }
 
-    }
+        if($password != "" && $confirmPassword != ""){
+            if($confirmPassword != $password){
+                $error .= "<span>Your passwords do not match</span><br>";
+            } 
+        }
 
-
-
-
+        if($error){
+            return $error;
+        }else{
+            return false;
+        }
 }
 
 
