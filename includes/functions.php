@@ -18,7 +18,14 @@ function createUser(){
         $validateUser = validateUser($firstName, $lastName, $username, $password, $confirmPassword);
 
         if (!$validateUser){
-            $query = "INSERT INTO users(firstName, lastName, username, password) VALUES ('$firstName', '$lastName', '$username', '$password')";
+
+            $hashFormat = "$2a$07$";
+            $salt = "usesomesillystringforsalt";
+            $hashAndSalt = $hashFormat . $salt;
+
+            $hashedPassword = crypt($password, $hashAndSalt);
+
+            $query = "INSERT INTO users(firstName, lastName, username, password) VALUES ('$firstName', '$lastName', '$username', '$hashedPassword')";
 
             $result = mysqli_query($connection, $query);
 
